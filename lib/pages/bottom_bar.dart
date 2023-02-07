@@ -13,7 +13,7 @@ class _BottomBarState extends State<BottomBar> {
   int _selectedIndex = 0;
   static final List<Widget> _widgetOptions = <Widget>[
     const HomePage(),
-    const Text("History"),
+    const Text("Histawdawdory"),
     const Text("Account"),
     const Text("Emergency List"),
   ];
