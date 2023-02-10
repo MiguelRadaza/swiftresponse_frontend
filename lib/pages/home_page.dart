@@ -104,16 +104,6 @@ class HomePage extends StatelessWidget {
                                   image: AssetImage(
                                       "assets/images/traffic_inforcers.png"))),
                         ),
-                        Container(
-                          width: 150,
-                          height: 150,
-                          decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(24),
-                              image: const DecorationImage(
-                                  fit: BoxFit.cover,
-                                  image: AssetImage(
-                                      "assets/images/traffic_inforcers.png"))),
-                        ),
                       ],
                     ),
                   ],

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:swiftresponse/pages/history_page.dart';
 import 'package:swiftresponse/pages/home_page.dart';
 import 'package:swiftresponse/widgets/small_text.dart';
 
@@ -13,7 +14,7 @@ class _BottomBarState extends State<BottomBar> {
   int _selectedIndex = 0;
   static final List<Widget> _widgetOptions = <Widget>[
     const HomePage(),
-    const Text("Histawdawdory"),
+    const HistoryPage(),
     const Text("Account"),
     const Text("Emergency List"),
   ];
@@ -40,9 +41,9 @@ class _BottomBarState extends State<BottomBar> {
             BottomNavigationBarItem(
                 icon: Icon(Icons.history), label: "History"),
             BottomNavigationBarItem(
-                icon: Icon(Icons.account_box_outlined), label: "Account"),
-            BottomNavigationBarItem(
                 icon: Icon(Icons.emergency), label: "Emergency Contact"),
+            BottomNavigationBarItem(
+                icon: Icon(Icons.account_box_outlined), label: "Account"),
           ]),
     );
   }
