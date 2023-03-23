@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
+import 'package:swiftresponse/pages/create_report_page.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -29,41 +30,49 @@ class HomePage extends StatelessWidget {
                 child: Column(
                   children: [
                     Gap(25),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Container(
-                          width: 150,
-                          height: 150,
-                          decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(24),
-                              image: const DecorationImage(
-                                  fit: BoxFit.cover,
-                                  image: AssetImage(
-                                      "assets/images/traffic_inforcers.png")),
-                              boxShadow: const [
-                                BoxShadow(
-                                    color: Color.fromARGB(255, 31, 26, 26),
-                                    blurRadius: 5.0,
-                                    offset: Offset(0, 5)),
-                                BoxShadow(
-                                    color: Color.fromARGB(255, 31, 26, 26),
-                                    blurRadius: 5.0,
-                                    offset: Offset(2, 0)),
-                              ]),
-                        ),
-                        Container(
-                          width: 150,
-                          height: 150,
-                          decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(24),
-                              image: const DecorationImage(
-                                  fit: BoxFit.cover,
-                                  image: AssetImage(
-                                      "assets/images/traffic_inforcers.png"))),
-                        ),
-                      ],
-                    ),
+                    GestureDetector(
+                        onTap: () => {
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (Container) =>
+                                          CreateReportPage()))
+                            },
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Container(
+                              width: 150,
+                              height: 150,
+                              decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(24),
+                                  image: const DecorationImage(
+                                      fit: BoxFit.cover,
+                                      image: AssetImage(
+                                          "assets/images/traffic_inforcers.png")),
+                                  boxShadow: const [
+                                    BoxShadow(
+                                        color: Color.fromARGB(255, 31, 26, 26),
+                                        blurRadius: 5.0,
+                                        offset: Offset(0, 5)),
+                                    BoxShadow(
+                                        color: Color.fromARGB(255, 31, 26, 26),
+                                        blurRadius: 5.0,
+                                        offset: Offset(2, 0)),
+                                  ]),
+                            ),
+                            Container(
+                              width: 150,
+                              height: 150,
+                              decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(24),
+                                  image: const DecorationImage(
+                                      fit: BoxFit.cover,
+                                      image: AssetImage(
+                                          "assets/images/traffic_inforcers.png"))),
+                            ),
+                          ],
+                        )),
                     Gap(25),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
