@@ -3,7 +3,6 @@ import 'package:gap/gap.dart';
 
 import '../utils/app_layout.dart';
 import '../widgets/big_text.dart';
-import '../widgets/expandable_text_widget.dart';
 import '../widgets/small_text.dart';
 
 class HistoryViewPage extends StatelessWidget {
