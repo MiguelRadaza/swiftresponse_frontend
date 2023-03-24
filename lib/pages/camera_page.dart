@@ -24,11 +24,19 @@ class _CameraPageState extends State<CameraPage> {
         setState(() {});
       });
     } on CameraException catch (e) {
-      debugPrint("camera error $e");
+      switch (e.code) {
+        case 'CameraAccessDenied':
+          debugPrint("camera access denied $e");
+          break;
+        default:
+          debugPrint("camera error $e");
+          break;
+      }
     }
   }
 
   Future takePicture() async {
+    print("take picture called ");
     if (!_cameraController.value.isInitialized) {
       return null;
     }

@@ -49,5 +49,7 @@
 	<true/>
 	<key>NSCameraUsageDescription</key>
 	<string>Allow camera usage for Swiftresponse app so that you can capture incident images.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>This app needs access to microphone when used</string>
 </dict>
 </plist>

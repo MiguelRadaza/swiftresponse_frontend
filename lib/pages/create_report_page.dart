@@ -3,7 +3,9 @@ import 'dart:io';
 
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_camera/flutter_camera.dart';
 import 'package:gap/gap.dart';
+import 'package:path/path.dart';
 import 'package:swiftresponse/pages/camera_page.dart';
 import 'package:swiftresponse/utils/colors.dart';
 
@@ -74,12 +76,36 @@ class _CreateReportPageState extends State<CreateReportPage> {
                         ),
                         GestureDetector(
                             onTap: () async {
-                              await availableCameras().then((value) =>
-                                  Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (_) =>
-                                              CameraPage(cameras: value))));
+                              FlutterCamera(
+                                color: Colors.amber,
+                                onImageCaptured: (value) {
+                                  final path = value.path;
+                                  print(
+                                      "::::::::::::::::::::::::::::::::: $path");
+                                  if (path.contains('.jpg')) {
+                                    showDialog(
+                                        context: context,
+                                        builder: (context) {
+                                          return AlertDialog(
+                                            content: Image.file(File(path)),
+                                          );
+                                        });
+                                  }
+                                },
+                                onVideoRecorded: (value) {
+                                  final path = value.path;
+                                  print(
+                                      '::::::::::::::::::::::::;; dkdkkd $path');
+
+                                  ///Show video preview .mp4
+                                },
+                              );
+                              // await availableCameras().then((value) =>
+                              //     Navigator.push(
+                              //         context,
+                              //         MaterialPageRoute(
+                              //             builder: (_) =>
+                              //                 CameraPage(cameras: value))));
                             },
                             // onTap: () async {
                             //   await availableCameras()
@@ -103,5 +129,30 @@ class _CreateReportPageState extends State<CreateReportPage> {
             ),
           ],
         ));
+  }
+
+  Widget _showCamera(context) {
+    return FlutterCamera(
+      color: Colors.amber,
+      onImageCaptured: (value) {
+        final path = value.path;
+        print("::::::::::::::::::::::::::::::::: $path");
+        if (path.contains('.jpg')) {
+          showDialog(
+              context: context,
+              builder: (context) {
+                return AlertDialog(
+                  content: Image.file(File(path)),
+                );
+              });
+        }
+      },
+      onVideoRecorded: (value) {
+        final path = value.path;
+        print('::::::::::::::::::::::::;; dkdkkd $path');
+
+        ///Show video preview .mp4
+      },
+    );
   }
 }
