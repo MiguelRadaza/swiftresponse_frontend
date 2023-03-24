@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:gap/gap.dart';
 import 'package:swiftresponse/pages/bottom_bar.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:swiftresponse/pages/home_page.dart';
 import 'package:swiftresponse/utils/colors.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -157,7 +158,7 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    return !_isUserSignedIn ? _loginPage() : BottomBar();
+    return !_isUserSignedIn ? _loginPage() : HomePage();
   }
 
   Widget _registerPage() {

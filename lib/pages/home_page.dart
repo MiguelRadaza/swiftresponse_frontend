@@ -1,121 +1,116 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
+import 'package:swiftresponse/pages/camera_page.dart';
+import 'package:camera/camera.dart';
 import 'package:swiftresponse/pages/create_report_page.dart';
+import 'package:swiftresponse/pages/history_page.dart';
+import 'package:swiftresponse/utils/colors.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({Key? key}) : super(key: key);
-
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        backgroundColor: Colors.transparent,
-        appBar: AppBar(
-          backgroundColor: Colors.white,
-          title: const Text(''),
-        ),
-        body: Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                  colors: [
-                    Color(0xFFFF5722),
-                    Color(0xFFFF7043),
-                  ],
-                  begin: FractionalOffset(0.1, 0.0),
-                  end: FractionalOffset(0.0, 1.0),
-                  stops: [0.0, 1.0],
-                  tileMode: TileMode.clamp),
-            ),
-            child: Container(
-                margin: EdgeInsets.only(left: 30, right: 30),
-                child: Column(
+    return Material(
+        child: Container(
+            decoration: BoxDecoration(color: Colors.white),
+            padding: EdgeInsets.only(top: 40),
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    Gap(25),
-                    GestureDetector(
-                        onTap: () => {
-                              Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (Container) =>
-                                          CreateReportPage()))
-                            },
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Container(
-                              width: 150,
-                              height: 150,
-                              decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(24),
-                                  image: const DecorationImage(
-                                      fit: BoxFit.cover,
-                                      image: AssetImage(
-                                          "assets/images/traffic_inforcers.png")),
-                                  boxShadow: const [
-                                    BoxShadow(
-                                        color: Color.fromARGB(255, 31, 26, 26),
-                                        blurRadius: 5.0,
-                                        offset: Offset(0, 5)),
-                                    BoxShadow(
-                                        color: Color.fromARGB(255, 31, 26, 26),
-                                        blurRadius: 5.0,
-                                        offset: Offset(2, 0)),
-                                  ]),
-                            ),
-                            Container(
-                              width: 150,
-                              height: 150,
-                              decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(24),
-                                  image: const DecorationImage(
-                                      fit: BoxFit.cover,
-                                      image: AssetImage(
-                                          "assets/images/traffic_inforcers.png"))),
-                            ),
-                          ],
-                        )),
-                    Gap(25),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Container(
-                          width: 150,
-                          height: 150,
-                          decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(24),
-                              image: const DecorationImage(
-                                  fit: BoxFit.cover,
-                                  image: AssetImage(
-                                      "assets/images/traffic_inforcers.png"))),
+                    Container(
+                      padding: EdgeInsets.only(bottom: 15, right: 30),
+                      child: Column(children: [
+                        Text(
+                          "———",
+                          style: TextStyle(fontWeight: FontWeight.bold),
                         ),
-                        Container(
-                          width: 150,
-                          height: 150,
-                          decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(24),
-                              image: const DecorationImage(
-                                  fit: BoxFit.cover,
-                                  image: AssetImage(
-                                      "assets/images/traffic_inforcers.png"))),
+                        Text(
+                          "———",
+                          style: TextStyle(fontWeight: FontWeight.bold),
                         ),
-                      ],
-                    ),
-                    Gap(25),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Container(
-                          width: 150,
-                          height: 150,
-                          decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(24),
-                              image: const DecorationImage(
-                                  fit: BoxFit.cover,
-                                  image: AssetImage(
-                                      "assets/images/traffic_inforcers.png"))),
-                        ),
-                      ],
-                    ),
+                        Text(
+                          "———",
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        )
+                      ]),
+                    )
                   ],
-                ))));
+                ),
+                Container(
+                  // height: 400,
+                  height: 570,
+                  width: double.maxFinite,
+                  // padding: EdgeInsets.only(top: 200),
+                  padding: EdgeInsets.only(top: 390),
+                  decoration: BoxDecoration(
+                      color: AppColors.backgroundColor,
+                      image: DecorationImage(
+                          image: AssetImage(
+                              "assets/images/listing_main_car_crash_clipart-800x800__1_.png"))),
+                  child: Column(
+                    children: [
+                      InkWell(
+                          onTap: () async {
+                            final image =
+                                await availableCameras().then((value) =>
+                                    // Navigator.push(
+                                    //     context,
+                                    //     MaterialPageRoute(
+                                    //         builder: (_) =>
+                                    //             CameraPage(cameras: value)
+                                    //             )
+                                    //             );
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) =>
+                                              CameraPage(cameras: value)),
+                                    ));
+                            // .then((capturedImage) {
+                            //   // Return to the previous page and pass the captured image as a parameter
+                            //   Navigator.push(
+                            //     context,
+                            //     MaterialPageRoute(
+                            //       builder: (context) =>
+                            //           CreateReportPage(image: image),
+                            //     ),
+                            //   );
+                            //   // Navigator.pop(context, capturedImage);
+                            // }));
+                          },
+                          child: Container(
+                            height: 50,
+                            width: 200,
+                            child: Center(child: Text("Report")),
+                            decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(24),
+                                color: Colors.white),
+                          )),
+                      const Gap(15),
+                      InkWell(
+                        onTap: () {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (Container) => HistoryPage()));
+                        },
+                        child: Container(
+                          height: 50,
+                          width: 200,
+                          child: Center(child: Text("History")),
+                          decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(24),
+                              color: Colors.white),
+                        ),
+                      )
+                    ],
+                  ),
+                )
+              ],
+            )));
   }
 }

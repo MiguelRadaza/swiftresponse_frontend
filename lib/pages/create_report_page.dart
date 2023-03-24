@@ -3,15 +3,15 @@ import 'dart:io';
 
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_camera/flutter_camera.dart';
 import 'package:gap/gap.dart';
 import 'package:path/path.dart';
 import 'package:swiftresponse/pages/camera_page.dart';
 import 'package:swiftresponse/utils/colors.dart';
 
 class CreateReportPage extends StatefulWidget {
+  final XFile image;
   // final XFile picture;
-  const CreateReportPage({Key? key}) : super(key: key);
+  const CreateReportPage({Key? key, required this.image}) : super(key: key);
 
   @override
   _CreateReportPageState createState() => _CreateReportPageState();
@@ -19,6 +19,25 @@ class CreateReportPage extends StatefulWidget {
 
 class _CreateReportPageState extends State<CreateReportPage> {
   late Bool smp;
+  final plateTextController = TextEditingController(text: '');
+  final licenseTextController = TextEditingController(text: '');
+  final carModelTextController = TextEditingController(text: '');
+  final placeOfAccidentTextController = TextEditingController(text: '');
+  final accidentCauseTextController = TextEditingController(text: '');
+  TimeOfDay _selectedTime = TimeOfDay.now();
+
+  Future<void> _selectTime(BuildContext context) async {
+    final TimeOfDay? picked = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.now(),
+    );
+    if (picked != null) {
+      setState(() {
+        _selectedTime = picked;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     // Obtain a list of the available cameras on the device.
@@ -27,7 +46,7 @@ class _CreateReportPageState extends State<CreateReportPage> {
         appBar: AppBar(
           title: const Text('Incident Report'),
         ),
-        backgroundColor: Color(0xFFFF7043),
+        backgroundColor: AppColors.backgroundColor,
         body: ListView(
           children: [
             Container(
@@ -42,117 +61,106 @@ class _CreateReportPageState extends State<CreateReportPage> {
                         borderRadius: BorderRadius.circular(24),
                         color: Colors.black12,
                         image: DecorationImage(
-                            fit: BoxFit.cover,
-                            image: AssetImage(
-                                "assets/images/sample_collision.jpg"))),
+                          fit: BoxFit.cover,
+                          image: FileImage(File(widget.image.path)),
+                        )),
                   ),
                   Gap(15),
-                  Container(
-                    decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(24)),
-                    padding: EdgeInsets.all(24),
-                    child: TextField(
-                      decoration: InputDecoration.collapsed(
-                          hintText: "Enter your description here"),
-                      maxLines: 8,
+                  TextField(
+                    controller: plateTextController,
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                      filled: true,
+                      fillColor: Colors.white,
+                      hintText: 'Plate Details',
+                    ),
+                  ),
+                  Gap(24),
+                  TextField(
+                    controller: licenseTextController,
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                      hintText: 'License Details',
+                      filled: true,
+                      fillColor: Colors.white,
+                    ),
+                  ),
+                  Gap(24),
+                  TextField(
+                    controller: carModelTextController,
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                      hintText: 'Car Model',
+                      filled: true,
+                      fillColor: Colors.white,
+                    ),
+                  ),
+                  Gap(24),
+                  TextField(
+                    controller: placeOfAccidentTextController,
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                      hintText: 'Place Of Accident',
+                      filled: true,
+                      fillColor: Colors.white,
+                    ),
+                  ),
+                  Gap(24),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Time of Accident: ${_selectedTime?.format(context) ?? 'Not selected'}',
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 17),
+                      ),
+                      ElevatedButton(
+                        onPressed: () => _selectTime(context),
+                        child: Text('Select Time'),
+                      ),
+                    ],
+                  ),
+                  Gap(24),
+                  TextField(
+                    controller: plateTextController,
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                      hintText: 'Accident Cause',
+                      filled: true,
+                      fillColor: Colors.white,
                     ),
                   ),
                   Gap(24),
                   Container(
                     margin: EdgeInsets.only(left: 10, right: 10),
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Container(
                           height: 40,
                           width: 130,
                           child: Center(
-                            child: Text("Submit"),
+                            child: Text(
+                              "REPORT",
+                              style: TextStyle(
+                                  color: AppColors.backgroundColor,
+                                  fontWeight: FontWeight.bold),
+                            ),
                           ),
                           decoration: BoxDecoration(
-                              color: Colors.amber,
+                              color: Colors.white,
                               borderRadius: BorderRadius.circular(24)),
                         ),
-                        GestureDetector(
-                            onTap: () async {
-                              FlutterCamera(
-                                color: Colors.amber,
-                                onImageCaptured: (value) {
-                                  final path = value.path;
-                                  print(
-                                      "::::::::::::::::::::::::::::::::: $path");
-                                  if (path.contains('.jpg')) {
-                                    showDialog(
-                                        context: context,
-                                        builder: (context) {
-                                          return AlertDialog(
-                                            content: Image.file(File(path)),
-                                          );
-                                        });
-                                  }
-                                },
-                                onVideoRecorded: (value) {
-                                  final path = value.path;
-                                  print(
-                                      '::::::::::::::::::::::::;; dkdkkd $path');
-
-                                  ///Show video preview .mp4
-                                },
-                              );
-                              // await availableCameras().then((value) =>
-                              //     Navigator.push(
-                              //         context,
-                              //         MaterialPageRoute(
-                              //             builder: (_) =>
-                              //                 CameraPage(cameras: value))));
-                            },
-                            // onTap: () async {
-                            //   await availableCameras()
-                            //       .then((value) => CameraPage(cameras: value));
-                            // },
-                            child: Container(
-                              height: 40,
-                              width: 130,
-                              child: Center(
-                                child: Text("Capture Image"),
-                              ),
-                              decoration: BoxDecoration(
-                                  color: Colors.amber,
-                                  borderRadius: BorderRadius.circular(24)),
-                            ))
                       ],
                     ),
-                  )
+                  ),
+                  const Gap(15)
                 ],
               ),
             ),
           ],
         ));
-  }
-
-  Widget _showCamera(context) {
-    return FlutterCamera(
-      color: Colors.amber,
-      onImageCaptured: (value) {
-        final path = value.path;
-        print("::::::::::::::::::::::::::::::::: $path");
-        if (path.contains('.jpg')) {
-          showDialog(
-              context: context,
-              builder: (context) {
-                return AlertDialog(
-                  content: Image.file(File(path)),
-                );
-              });
-        }
-      },
-      onVideoRecorded: (value) {
-        final path = value.path;
-        print('::::::::::::::::::::::::;; dkdkkd $path');
-
-        ///Show video preview .mp4
-      },
-    );
   }
 }
