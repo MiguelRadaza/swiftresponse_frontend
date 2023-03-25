@@ -15,13 +15,13 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  final emailTextController = TextEditingController(text: '');
-  final passwordTextController = TextEditingController(text: '');
-  final firstNameTextController = TextEditingController(text: '');
-  final lastNameTextController = TextEditingController(text: '');
-  final numberTextController = TextEditingController(text: '');
-  final permanentAddressTextController = TextEditingController(text: '');
-  final ageTextController = TextEditingController(text: '');
+  final emailTextController = TextEditingController(text: "");
+  final passwordTextController = TextEditingController(text: "");
+  final firstNameTextController = TextEditingController(text: "");
+  final lastNameTextController = TextEditingController(text: "");
+  final numberTextController = TextEditingController(text: "");
+  final permanentAddressTextController = TextEditingController(text: "");
+  final ageTextController = TextEditingController(text: "");
   FirebaseAuth auth = FirebaseAuth.instance;
   bool _isUserSignedIn = false;
   DateTime _selectedDate = DateTime.now();
@@ -29,6 +29,7 @@ class _LoginPageState extends State<LoginPage> {
   bool _isReceiveEmailUpdate = false;
   bool isRegisterButtonDisabled = false;
   final db = FirebaseFirestore.instance;
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -51,6 +52,9 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void _createUser() async {
+    setState(() {
+      _isLoading = true;
+    });
     try {
       UserCredential userCredential = await FirebaseAuth.instance
           .createUserWithEmailAndPassword(
@@ -61,14 +65,14 @@ class _LoginPageState extends State<LoginPage> {
 
       await users.doc(uid).set({
         'birthdate': _selectedDate.toString(),
-        'email': emailTextController.text,
-        'address': permanentAddressTextController.text,
-        'firstname': firstNameTextController.text,
-        'lastname': lastNameTextController.text,
-        'password': passwordTextController.text,
+        'email': emailTextController.text.toString(),
+        'address': permanentAddressTextController.text.toString(),
+        'firstname': firstNameTextController.text.toString(),
+        'lastname': lastNameTextController.text.toString(),
+        'password': passwordTextController.text.toString(),
         'user_id': uid,
-        'number': numberTextController.text,
-        'age': ageTextController.text,
+        'number': numberTextController.text.toString(),
+        'age': ageTextController.text.toString(),
         'isReceiveEmailUpdate': _isReceiveEmailUpdate
       });
 
@@ -82,6 +86,9 @@ class _LoginPageState extends State<LoginPage> {
             fontSize: 16.0);
         print(
             'User ${userCredential.user!.uid.toString()} is registered successfully');
+        setState(() {
+          _isLoading = false;
+        });
       } else {
         Fluttertoast.showToast(
             msg: "Failed to Register User.",
@@ -150,13 +157,78 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
+  void _signInUser() async {
+    setState(() {
+      _isLoading = true;
+    });
+    try {
+      if (emailTextController.text.isEmpty) {
+        Fluttertoast.showToast(
+            msg: "Email is required to sign in.",
+            toastLength: Toast.LENGTH_LONG,
+            gravity: ToastGravity.BOTTOM,
+            backgroundColor: Colors.grey,
+            textColor: Colors.black,
+            fontSize: 16.0);
+      }
+      if (passwordTextController.text.isEmpty) {
+        Fluttertoast.showToast(
+            msg: "Password is required to sign in.",
+            toastLength: Toast.LENGTH_LONG,
+            gravity: ToastGravity.BOTTOM,
+            backgroundColor: Colors.grey,
+            textColor: Colors.black,
+            fontSize: 16.0);
+      }
+      final credential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+          email: emailTextController.text.toString(),
+          password: passwordTextController.text.toString());
+      setState(() {
+        _isLoading = false;
+        _isUserSignedIn = true;
+      });
+      Fluttertoast.showToast(
+          msg: "Login Successfully.",
+          toastLength: Toast.LENGTH_LONG,
+          gravity: ToastGravity.BOTTOM,
+          backgroundColor: Colors.grey,
+          textColor: Colors.black,
+          fontSize: 16.0);
+    } on FirebaseAuthException catch (e) {
+      print(e);
+      if (e.code == 'user-not-found') {
+        print('No user found for that email.');
+        Fluttertoast.showToast(
+            msg: "No user found for that email.",
+            toastLength: Toast.LENGTH_LONG,
+            gravity: ToastGravity.BOTTOM,
+            backgroundColor: Colors.red.shade400,
+            textColor: Colors.white,
+            fontSize: 16.0);
+      } else if (e.code == 'wrong-password') {
+        Fluttertoast.showToast(
+            msg: "Wrong password provided for that user.",
+            toastLength: Toast.LENGTH_LONG,
+            gravity: ToastGravity.BOTTOM,
+            backgroundColor: Colors.red.shade400,
+            textColor: Colors.white,
+            fontSize: 16.0);
+        print('Wrong password provided for that user.');
+      }
+    }
+  }
+
   @override
   void dispose() {
     super.dispose();
     emailTextController.dispose();
     passwordTextController.dispose();
+    permanentAddressTextController.dispose();
     firstNameTextController.dispose();
     lastNameTextController.dispose();
+    passwordTextController.dispose();
+    numberTextController.dispose();
+    ageTextController.dispose();
   }
 
   @override
@@ -165,235 +237,295 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Widget _registerPage() {
-    return Material(
-        child: ListView(
-      padding: EdgeInsets.symmetric(vertical: 50),
+    return Stack(
       children: [
-        Container(
-          padding: EdgeInsets.symmetric(horizontal: 30),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Row(
-                children: const [
-                  Text(
-                    "Sign Up",
-                    style: TextStyle(fontSize: 40, fontWeight: FontWeight.bold),
-                  ),
-                  Text(
-                    "●",
-                    style: TextStyle(fontSize: 24),
-                  ),
-                ],
-              ),
-              const Gap(20),
-              Row(
-                children: const [
-                  Text("Already have an account?"),
-                  Gap(20),
-                  Text("Login"),
-                ],
-              ),
-              const SizedBox(
-                height: 40,
-              ),
-              TextField(
-                controller: firstNameTextController,
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
-                  hintText: 'First Name',
-                ),
-              ),
-              const SizedBox(
-                height: 16,
-              ),
-              TextField(
-                controller: lastNameTextController,
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
-                  hintText: 'Last Name',
-                ),
-              ),
-              const SizedBox(
-                height: 16,
-              ),
-              Row(
+        Material(
+            child: ListView(
+          padding: EdgeInsets.symmetric(vertical: 50),
+          children: [
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 30),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Expanded(
-                    child: TextField(
-                      controller: ageTextController,
-                      decoration: const InputDecoration(
-                        labelText: 'Age',
-                        border: OutlineInputBorder(),
+                  Row(
+                    children: const [
+                      Text(
+                        "Sign Up",
+                        style: TextStyle(
+                            fontSize: 40, fontWeight: FontWeight.bold),
+                      ),
+                      Text(
+                        "●",
+                        style: TextStyle(fontSize: 24),
+                      ),
+                    ],
+                  ),
+                  const Gap(20),
+                  Row(
+                    children: const [
+                      Text("Already have an account?"),
+                      Gap(20),
+                      Text("Login"),
+                    ],
+                  ),
+                  const SizedBox(
+                    height: 40,
+                  ),
+                  TextField(
+                    controller: firstNameTextController,
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                      hintText: 'First Name',
+                    ),
+                  ),
+                  const SizedBox(
+                    height: 16,
+                  ),
+                  TextField(
+                    controller: lastNameTextController,
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                      hintText: 'Last Name',
+                    ),
+                  ),
+                  const SizedBox(
+                    height: 16,
+                  ),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: ageTextController,
+                          decoration: const InputDecoration(
+                            labelText: 'Age',
+                            border: OutlineInputBorder(),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 5),
+                      Flexible(
+                        child: ListTile(
+                          title: const Text("Select Birthdate:"),
+                          subtitle: Text(
+                              "${_selectedDate.year}-${_selectedDate.month}-${_selectedDate.day}"),
+                          trailing: const Icon(Icons.keyboard_arrow_down),
+                          onTap: () => _selectDate(context),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(
+                    height: 16,
+                  ),
+                  TextField(
+                    controller: numberTextController,
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                      hintText: 'Number',
+                    ),
+                  ),
+                  const SizedBox(
+                    height: 16,
+                  ),
+                  TextField(
+                    controller: permanentAddressTextController,
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                      hintText: 'Permanent Address',
+                    ),
+                  ),
+                  const SizedBox(
+                    height: 16,
+                  ),
+                  TextField(
+                    controller: emailTextController,
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                      hintText: 'Email',
+                    ),
+                  ),
+                  const SizedBox(
+                    height: 16,
+                  ),
+                  TextField(
+                    controller: passwordTextController,
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                      hintText: 'Password',
+                    ),
+                  ),
+                  Row(children: [
+                    Checkbox(
+                      value: _isReceiveEmailUpdate,
+                      onChanged: (bool? value) {
+                        setState(() {
+                          _isReceiveEmailUpdate = value!;
+                        });
+                      },
+                    ),
+                    const Text("Receive email updates")
+                  ]),
+                  GestureDetector(
+                    onTap: isRegisterButtonDisabled
+                        ? null
+                        : () {
+                            setState(() {
+                              _createUser();
+                            });
+                          },
+                    child: Container(
+                      height: 50,
+                      width: double.maxFinite,
+                      decoration: BoxDecoration(color: AppColors.buttonColor),
+                      child: const Center(
+                        child: Text(
+                          "SIGN UP",
+                          style: TextStyle(
+                              color: AppColors.buttonTextColor,
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold),
+                        ),
                       ),
                     ),
                   ),
-                  const SizedBox(width: 5),
-                  Flexible(
-                    child: ListTile(
-                      title: const Text("Select Birthdate:"),
-                      subtitle: Text(
-                          "${_selectedDate.year}-${_selectedDate.month}-${_selectedDate.day}"),
-                      trailing: const Icon(Icons.keyboard_arrow_down),
-                      onTap: () => _selectDate(context),
-                    ),
+                  Gap(15),
+                  Row(
+                    children: const [
+                      Text("By signing up you agree to our:"),
+                    ],
                   ),
+                  Row(
+                    children: const [
+                      Text("Privacy Policy & Terms of Service"),
+                    ],
+                  )
                 ],
               ),
-              const SizedBox(
-                height: 16,
-              ),
-              TextField(
-                controller: numberTextController,
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
-                  hintText: 'Number',
-                ),
-              ),
-              const SizedBox(
-                height: 16,
-              ),
-              TextField(
-                controller: permanentAddressTextController,
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
-                  hintText: 'Permanent Address',
-                ),
-              ),
-              const SizedBox(
-                height: 16,
-              ),
-              TextField(
-                controller: emailTextController,
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
-                  hintText: 'Email',
-                ),
-              ),
-              const SizedBox(
-                height: 16,
-              ),
-              TextField(
-                controller: passwordTextController,
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
-                  hintText: 'Password',
-                ),
-              ),
-              Row(children: [
-                Checkbox(
-                  value: _isReceiveEmailUpdate,
-                  onChanged: (bool? value) {
-                    _isReceiveEmailUpdate = value!;
-                  },
-                ),
-                const Text("Receive email updates")
-              ]),
-              GestureDetector(
-                onTap: isRegisterButtonDisabled
-                    ? null
-                    : () {
-                        setState(() {
-                          _createUser();
-                          isRegisterButtonDisabled = true;
-                        });
-                      },
-                child: Container(
-                  height: 50,
-                  width: double.maxFinite,
-                  decoration: BoxDecoration(color: AppColors.buttonColor),
-                  child: const Center(
-                    child: Text(
-                      "SIGN UP",
-                      style: TextStyle(
-                          color: AppColors.buttonTextColor,
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                ),
-              ),
-              Gap(15),
-              Row(
-                children: const [
-                  Text("By signing up you agree to our:"),
-                ],
-              ),
-              Row(
-                children: const [
-                  Text("Privacy Policy & Terms of Service"),
-                ],
+            )
+          ],
+        )),
+        _isLoading
+            ? Container(
+                color: Colors.black.withOpacity(0.5),
               )
-            ],
-          ),
-        )
+            : SizedBox.shrink(),
+        // progress indicator
+        _isLoading
+            ? Center(
+                child: CircularProgressIndicator(),
+              )
+            : SizedBox.shrink(),
       ],
-    ));
+    );
   }
 
   Widget _loginPage() {
     return !_showRegisterPage
-        ? Material(
-            child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 30),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Text(
-                  "SWIFTRESPONSE APP",
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(
-                  height: 16,
-                ),
-                const TextField(
-                  decoration: InputDecoration(
-                    border: OutlineInputBorder(),
-                    hintText: 'Enter Email',
-                  ),
-                ),
-                const TextField(
-                  decoration: InputDecoration(
-                    border: OutlineInputBorder(),
-                    hintText: 'Enter Password',
-                  ),
-                ),
-                const SizedBox(
-                  height: 16,
-                ),
-                Container(
-                  height: 40,
-                  width: double.maxFinite,
-                  decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(24),
-                      color: Colors.grey.shade300),
-                  child: const Center(
-                    child: Text("Sign In"),
-                  ),
-                ),
-                const SizedBox(
-                  height: 16,
-                ),
-                InkWell(
+        ? Stack(
+            children: [
+              Material(
                   child: Container(
-                    height: 40,
-                    width: double.maxFinite,
-                    decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(24),
-                        color: Colors.grey.shade300),
-                    child: const Center(
-                      child: Text("Register"),
+                color: AppColors.backgroundColor,
+                padding: const EdgeInsets.symmetric(horizontal: 30),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text(
+                      "CALLision",
+                      style: TextStyle(
+                          fontSize: 70,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.white),
                     ),
-                  ),
-                  onTap: () {
-                    setState(() {
-                      _showRegisterPage = true;
-                    });
-                  },
-                )
-              ],
-            ),
-          ))
+                    const SizedBox(
+                      height: 16,
+                    ),
+                    const Text("Login Account",
+                        style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white)),
+                    const SizedBox(
+                      height: 25,
+                    ),
+                    TextField(
+                      controller: emailTextController,
+                      decoration: const InputDecoration(
+                        border: OutlineInputBorder(),
+                        hintText: 'Enter Email',
+                        filled: true,
+                        fillColor: Colors.white,
+                      ),
+                    ),
+                    const Gap(15),
+                    TextField(
+                      obscureText: true,
+                      controller: passwordTextController,
+                      decoration: const InputDecoration(
+                        border: OutlineInputBorder(),
+                        hintText: 'Enter Password',
+                        filled: true,
+                        fillColor: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(
+                      height: 16,
+                    ),
+                    InkWell(
+                        onTap: () => _signInUser(),
+                        child: Container(
+                          height: 40,
+                          width: double.maxFinite,
+                          decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(24),
+                              color: AppColors.buttonColor2),
+                          child: const Center(
+                            child: Text(
+                              "Sign In",
+                              style:
+                                  TextStyle(color: Colors.white, fontSize: 20),
+                            ),
+                          ),
+                        )),
+                    const SizedBox(
+                      height: 16,
+                    ),
+                    InkWell(
+                      child: Container(
+                        height: 40,
+                        width: double.maxFinite,
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(24),
+                            color: AppColors.buttonColor2),
+                        child: const Center(
+                          child: Text("Register",
+                              style:
+                                  TextStyle(color: Colors.white, fontSize: 20)),
+                        ),
+                      ),
+                      onTap: () {
+                        setState(() {
+                          _showRegisterPage = true;
+                        });
+                      },
+                    )
+                  ],
+                ),
+              )),
+              _isLoading
+                  ? Container(
+                      color: Colors.black.withOpacity(0.5),
+                    )
+                  : SizedBox.shrink(),
+              // progress indicator
+              _isLoading
+                  ? Center(
+                      child: CircularProgressIndicator(),
+                    )
+                  : SizedBox.shrink(),
+            ],
+          )
         : _registerPage();
   }
 }
