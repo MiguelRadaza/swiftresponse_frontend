@@ -41,10 +41,8 @@ class HomePage extends StatelessWidget {
                   ],
                 ),
                 Container(
-                  // height: 400,
                   height: 570,
                   width: double.maxFinite,
-                  // padding: EdgeInsets.only(top: 200),
                   padding: EdgeInsets.only(top: 390),
                   decoration: BoxDecoration(
                       color: AppColors.backgroundColor,
@@ -55,32 +53,13 @@ class HomePage extends StatelessWidget {
                     children: [
                       InkWell(
                           onTap: () async {
-                            final image =
-                                await availableCameras().then((value) =>
-                                    // Navigator.push(
-                                    //     context,
-                                    //     MaterialPageRoute(
-                                    //         builder: (_) =>
-                                    //             CameraPage(cameras: value)
-                                    //             )
-                                    //             );
-                                    Navigator.push(
+                            final image = await availableCameras()
+                                .then((value) => Navigator.push(
                                       context,
                                       MaterialPageRoute(
                                           builder: (context) =>
                                               CameraPage(cameras: value)),
                                     ));
-                            // .then((capturedImage) {
-                            //   // Return to the previous page and pass the captured image as a parameter
-                            //   Navigator.push(
-                            //     context,
-                            //     MaterialPageRoute(
-                            //       builder: (context) =>
-                            //           CreateReportPage(image: image),
-                            //     ),
-                            //   );
-                            //   // Navigator.pop(context, capturedImage);
-                            // }));
                           },
                           child: Container(
                             height: 50,

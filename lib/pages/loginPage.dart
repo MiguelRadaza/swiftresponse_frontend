@@ -90,6 +90,9 @@ class _LoginPageState extends State<LoginPage> {
           _isLoading = false;
         });
       } else {
+        setState(() {
+          _isLoading = false;
+        });
         Fluttertoast.showToast(
             msg: "Failed to Register User.",
             toastLength: Toast.LENGTH_LONG,
@@ -99,6 +102,9 @@ class _LoginPageState extends State<LoginPage> {
             fontSize: 16.0);
       }
     } on FirebaseAuthException catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
       if (e.code == 'weak-password') {
         Fluttertoast.showToast(
             msg: "The password provided is too weak.",
@@ -109,6 +115,9 @@ class _LoginPageState extends State<LoginPage> {
             fontSize: 16.0);
         print('The password provided is too weak.');
       } else if (e.code == 'email-already-in-use') {
+        setState(() {
+          _isLoading = false;
+        });
         Fluttertoast.showToast(
             msg: "The account already exists for that email.",
             toastLength: Toast.LENGTH_LONG,
@@ -119,6 +128,9 @@ class _LoginPageState extends State<LoginPage> {
         print('The account already exists for that email.');
       }
     } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
       Fluttertoast.showToast(
           msg: "An error occurred please contact developer :$e",
           toastLength: Toast.LENGTH_LONG,
@@ -196,6 +208,9 @@ class _LoginPageState extends State<LoginPage> {
           fontSize: 16.0);
     } on FirebaseAuthException catch (e) {
       print(e);
+      setState(() {
+        _isLoading = false;
+      });
       if (e.code == 'user-not-found') {
         print('No user found for that email.');
         Fluttertoast.showToast(
@@ -206,6 +221,9 @@ class _LoginPageState extends State<LoginPage> {
             textColor: Colors.white,
             fontSize: 16.0);
       } else if (e.code == 'wrong-password') {
+        setState(() {
+          _isLoading = false;
+        });
         Fluttertoast.showToast(
             msg: "Wrong password provided for that user.",
             toastLength: Toast.LENGTH_LONG,
