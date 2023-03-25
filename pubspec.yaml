@@ -45,9 +45,10 @@ dependencies:
   firebase_auth:
   fluttertoast:
   cloud_firestore:
-  geocoding:
-  geolocator:
+  # geocoding:
+  # geolocator:
   permission_handler:
+  firebase_storage:
 
 dev_dependencies:
   flutter_test:

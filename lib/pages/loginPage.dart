@@ -28,6 +28,7 @@ class _LoginPageState extends State<LoginPage> {
   bool _showRegisterPage = false;
   bool _isReceiveEmailUpdate = false;
   bool isRegisterButtonDisabled = false;
+  final db = FirebaseFirestore.instance;
 
   @override
   void initState() {
@@ -56,7 +57,9 @@ class _LoginPageState extends State<LoginPage> {
               email: emailTextController.text,
               password: passwordTextController.text);
       String uid = userCredential.user!.uid;
-      await FirebaseFirestore.instance.collection('users').doc(uid).set({
+      CollectionReference users = db.collection('users');
+
+      await users.doc(uid).set({
         'birthdate': _selectedDate.toString(),
         'email': emailTextController.text,
         'address': permanentAddressTextController.text,
@@ -73,7 +76,7 @@ class _LoginPageState extends State<LoginPage> {
         Fluttertoast.showToast(
             msg: "registered successfully.",
             toastLength: Toast.LENGTH_LONG,
-            gravity: ToastGravity.CENTER,
+            gravity: ToastGravity.BOTTOM,
             backgroundColor: Colors.red,
             textColor: Colors.white,
             fontSize: 16.0);
@@ -83,7 +86,7 @@ class _LoginPageState extends State<LoginPage> {
         Fluttertoast.showToast(
             msg: "Failed to Register User.",
             toastLength: Toast.LENGTH_LONG,
-            gravity: ToastGravity.CENTER,
+            gravity: ToastGravity.BOTTOM,
             backgroundColor: Colors.red,
             textColor: Colors.white,
             fontSize: 16.0);
@@ -93,7 +96,7 @@ class _LoginPageState extends State<LoginPage> {
         Fluttertoast.showToast(
             msg: "The password provided is too weak.",
             toastLength: Toast.LENGTH_LONG,
-            gravity: ToastGravity.CENTER,
+            gravity: ToastGravity.BOTTOM,
             backgroundColor: Colors.grey,
             textColor: Colors.white,
             fontSize: 16.0);
@@ -102,7 +105,7 @@ class _LoginPageState extends State<LoginPage> {
         Fluttertoast.showToast(
             msg: "The account already exists for that email.",
             toastLength: Toast.LENGTH_LONG,
-            gravity: ToastGravity.CENTER,
+            gravity: ToastGravity.BOTTOM,
             backgroundColor: Colors.red,
             textColor: Colors.white,
             fontSize: 16.0);
@@ -112,7 +115,7 @@ class _LoginPageState extends State<LoginPage> {
       Fluttertoast.showToast(
           msg: "An error occurred please contact developer :$e",
           toastLength: Toast.LENGTH_LONG,
-          gravity: ToastGravity.CENTER,
+          gravity: ToastGravity.BOTTOM,
           backgroundColor: Colors.red,
           textColor: Colors.white,
           fontSize: 16.0);
