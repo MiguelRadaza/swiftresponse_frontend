@@ -84,7 +84,7 @@ class _CreateReportPageState extends State<CreateReportPage>
   }
 
   void stopLocationUpdates() {
-    _positionStreamSubscription?.cancel();
+    _positionStreamSubscription.cancel();
   }
 
   Future<void> _selectTime(BuildContext context) async {
@@ -187,9 +187,10 @@ class _CreateReportPageState extends State<CreateReportPage>
       _isUploading = false;
     });
 
+    // ignore: use_build_context_synchronously
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (context) => ReportTracker()),
+      MaterialPageRoute(builder: (context) => const ReportTracker()),
     );
   }
 
@@ -215,13 +216,13 @@ class _CreateReportPageState extends State<CreateReportPage>
   }
 
   void startTimer() {
-    _timer = Timer.periodic(Duration(minutes: 5), (timer) {
+    _timer = Timer.periodic(const Duration(minutes: 5), (timer) {
       checkReportStatus();
     });
   }
 
   void stopTimer() {
-    _timer?.cancel();
+    _timer.cancel();
   }
 
   void checkReportStatus() async {
@@ -343,7 +344,7 @@ class _CreateReportPageState extends State<CreateReportPage>
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          'Time of Accident: ${_selectedTime?.format(context) ?? 'Not selected'}',
+                          'Time of Accident: ${_selectedTime.format(context)}',
                           style: TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.bold,
