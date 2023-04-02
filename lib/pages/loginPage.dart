@@ -62,7 +62,7 @@ class _LoginPageState extends State<LoginPage> {
               password: passwordTextController.text);
       String uid = userCredential.user!.uid;
       CollectionReference users = db.collection('users');
-
+      
       await users.doc(uid).set({
         'birthdate': _selectedDate.toString(),
         'email': emailTextController.text.toString(),

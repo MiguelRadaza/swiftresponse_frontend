@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:developer';
 import 'dart:ffi';
 import 'dart:io';
@@ -9,10 +10,13 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:gap/gap.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:path/path.dart';
 import 'package:swiftresponse/pages/camera_page.dart';
+import 'package:swiftresponse/pages/reportTracker.dart';
 import 'package:swiftresponse/utils/colors.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class CreateReportPage extends StatefulWidget {
   final XFile image;
@@ -23,9 +27,12 @@ class CreateReportPage extends StatefulWidget {
   _CreateReportPageState createState() => _CreateReportPageState();
 }
 
-class _CreateReportPageState extends State<CreateReportPage> {
+class _CreateReportPageState extends State<CreateReportPage>
+    with WidgetsBindingObserver {
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final db = FirebaseFirestore.instance;
   late Bool smp;
+  final _storage = FlutterSecureStorage();
   final plateTextController = TextEditingController(text: "");
   final licenseTextController = TextEditingController(text: "");
   final carModelTextController = TextEditingController(text: "");
@@ -35,10 +42,14 @@ class _CreateReportPageState extends State<CreateReportPage> {
   late String userId;
   final storageRef = FirebaseStorage.instance.ref();
   bool _isUploading = false;
+  late String newReportId;
+  late Timer _timer;
+  late StreamSubscription<Position> _positionStreamSubscription;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _handUserSession();
   }
 
@@ -55,6 +66,27 @@ class _CreateReportPageState extends State<CreateReportPage> {
     });
   }
 
+  void startLocationUpdates() {
+    LocationSettings locSetting = new LocationSettings(
+        distanceFilter: 10, accuracy: LocationAccuracy.high);
+    _positionStreamSubscription =
+        Geolocator.getPositionStream(locationSettings: locSetting
+                // desiredAccuracy: LocationAccuracy.high,
+                // distanceFilter: 10, // Update location every 10 meters
+                )
+            .listen((position) {
+      final location = [position.latitude, position.longitude];
+      FirebaseFirestore.instance
+          .collection('reports')
+          .doc(newReportId)
+          .update({'location': location});
+    });
+  }
+
+  void stopLocationUpdates() {
+    _positionStreamSubscription?.cancel();
+  }
+
   Future<void> _selectTime(BuildContext context) async {
     final TimeOfDay? picked = await showTimePicker(
       context: context,
@@ -67,7 +99,7 @@ class _CreateReportPageState extends State<CreateReportPage> {
     }
   }
 
-  Future<String?> pickAndUploadFile() async {
+  Future<String?> pickAndUploadFile(BuildContext context) async {
     setState(() {
       _isUploading = true;
     });
@@ -94,7 +126,7 @@ class _CreateReportPageState extends State<CreateReportPage> {
           print("Error upload");
           break;
         case TaskState.success:
-          _createReport(path);
+          _createReport(context, path);
           // Handle successful uploads on complete
           print("SUCESS CHECK FIREBASE NOW");
           break;
@@ -102,9 +134,24 @@ class _CreateReportPageState extends State<CreateReportPage> {
     });
   }
 
-  void _createReport(path) async {
+  // Future<void> _createReport(BuildContext context, path) async {
+  void _createReport(BuildContext context, path) async {
     final imageUrl = await storageRef.child(path).getDownloadURL();
     CollectionReference reports = db.collection('reports');
+
+    if (accidentCauseTextController.text.isEmpty ||
+        carModelTextController.text.isEmpty ||
+        licenseTextController.text.isEmpty ||
+        placeOfAccidentTextController.text.isEmpty ||
+        plateTextController.text.isEmpty) {
+      Fluttertoast.showToast(
+          msg: "Please include all required details.",
+          toastLength: Toast.LENGTH_LONG,
+          gravity: ToastGravity.BOTTOM,
+          backgroundColor: Colors.red.shade400,
+          textColor: Colors.white,
+          fontSize: 16.0);
+    }
 
     DocumentReference newReportRef = await reports.add({
       'accidentCause': accidentCauseTextController.text.toString(),
@@ -116,16 +163,18 @@ class _CreateReportPageState extends State<CreateReportPage> {
       'timeOfAccident': _selectedTime.toString(),
       'placeOfAccident': placeOfAccidentTextController.text.toString(),
       'plateDetails': plateTextController.text.toString(),
-      'userId': userId,
+      'user_id': userId,
     });
 
-    String newReportId = newReportRef.id;
+    newReportId = newReportRef.id;
     await newReportRef.update({
       'status': 'active',
       'reportId': newReportId,
       'created_at': DateTime.now(),
     });
-
+    await _storage.write(key: 'report_id', value: newReportId);
+    await _storage.write(key: 'report_status', value: 'open');
+    startLocationUpdates();
     Fluttertoast.showToast(
         msg: "Report created successfully.",
         toastLength: Toast.LENGTH_LONG,
@@ -137,6 +186,88 @@ class _CreateReportPageState extends State<CreateReportPage> {
     setState(() {
       _isUploading = false;
     });
+
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => ReportTracker()),
+    );
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    switch (state) {
+      case AppLifecycleState.resumed:
+        startTimer();
+        break;
+      case AppLifecycleState.paused:
+        stopTimer();
+        break;
+      default:
+        break;
+    }
+  }
+
+  void startTimer() {
+    _timer = Timer.periodic(Duration(minutes: 5), (timer) {
+      checkReportStatus();
+    });
+  }
+
+  void stopTimer() {
+    _timer?.cancel();
+  }
+
+  void checkReportStatus() async {
+    final reportId = await _storage.read(key: 'report_id');
+    final reportStatus = await _storage.read(key: 'report_status');
+
+    if (reportId != null && reportStatus == 'open') {
+      // Check the report status in Firestore
+      final snapshot = await FirebaseFirestore.instance
+          .collection('reports')
+          .doc(reportId)
+          .get();
+
+      if (snapshot.exists && snapshot.data()!['status'] == 'closed') {
+        stopLocationUpdates();
+        await _storage.write(key: 'report_status', value: 'closed');
+      }
+    }
+  }
+
+  void _showConfirmationDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Confirmation'),
+          content: Text('Are you sure you want to submit the report?'),
+          actions: <Widget>[
+            TextButton(
+              child: Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: Text('Submit'),
+              onPressed: () {
+                Navigator.of(context).pop();
+                // onSubmit();
+                pickAndUploadFile(context);
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -226,7 +357,7 @@ class _CreateReportPageState extends State<CreateReportPage> {
                     ),
                     Gap(24),
                     TextField(
-                      controller: plateTextController,
+                      controller: accidentCauseTextController,
                       decoration: const InputDecoration(
                         border: OutlineInputBorder(),
                         hintText: 'Accident Cause',
@@ -241,7 +372,7 @@ class _CreateReportPageState extends State<CreateReportPage> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           InkWell(
-                            onTap: () => pickAndUploadFile(),
+                            onTap: () => _showConfirmationDialog(context),
                             child: Container(
                               height: 40,
                               width: 130,

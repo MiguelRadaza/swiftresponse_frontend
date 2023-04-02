@@ -16,67 +16,98 @@ class HistoryPage extends StatefulWidget {
 
 class _HistoryPageState extends State<HistoryPage> {
   late String userId;
-  late Stream<QuerySnapshot> _usersStream;
+  final FirebaseAuth auth = FirebaseAuth.instance;
+  late Stream<QuerySnapshot> _reportsStream;
+
   @override
   void initState() {
-    handleReportHistory();
-  }
-
-  Future<String?> handleReportHistory() async {
-    print("documents");
-
-    await FirebaseAuth.instance.authStateChanges().listen((User? user) {
-      if (user == null) {
-        print('User is currently signed out!');
-      } else {
-        setState(() {
-          userId = user.uid;
-          _usersStream = FirebaseFirestore.instance
-              .collection('reports')
-              .where('uid', isEqualTo: userId.toString())
-              .snapshots();
-        });
-
-        print('User is signed in!');
-      }
-    });
-    print(userId);
-
-    // FirebaseFirestore firestore = FirebaseFirestore.instance;
-    // QuerySnapshot snapshot = await firestore
-    //     .collection('reports')
-    //     .where('uid', isEqualTo: userId.toString())
-    //     .get();
-
-    // List<DocumentSnapshot> documents = snapshot.docs;
-    // print(documents);
+    super.initState();
+    if (auth.currentUser != null) {
+      String userId = auth.currentUser!.uid;
+      _reportsStream = FirebaseFirestore.instance
+          .collection('reports')
+          .where('user_id', isEqualTo: userId)
+          .snapshots();
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+        appBar: AppBar(),
         body: StreamBuilder<QuerySnapshot>(
-      stream: _usersStream,
-      builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
-        if (snapshot.hasError) {
-          return Text('Something went wrong');
-        }
+          stream: _reportsStream,
+          builder:
+              (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+            print(snapshot.data?.docs.toList());
+            if (snapshot.hasError) {
+              return Text('Something went wrong');
+            }
 
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return Text("Loading");
-        }
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return Center(
+                  child: Stack(
+                children: [
+                  Container(
+                    color: Colors.black.withOpacity(0.5),
+                  ),
+                  Center(
+                    child: CircularProgressIndicator(),
+                  )
+                ],
+              ));
+            }
 
-        return ListView(
-          children: snapshot.data!.docs.map((DocumentSnapshot document) {
-            Map<String, dynamic> data =
-                document.data()! as Map<String, dynamic>;
-            return ListTile(
-              title: Text(data['address']),
-              subtitle: Text(data['carModel']),
+            if (snapshot.data!.docs.isEmpty) {
+              return Center(
+                child: Text("No reports to show."),
+              );
+            }
+
+
+            List<Report> reports = snapshot.data!.docs.map((doc) {
+              return Report.fromSnapshot(doc);
+            }).toList();
+
+            return ListView.builder(
+              itemCount: reports.length,
+              itemBuilder: (context, index) {
+                Report report = reports[index];
+                return ListTile(
+                  title: Text(report.reportId),
+                  subtitle: Text(report.address),
+                  trailing: Text(report.status),
+                  onTap: () {
+                    //         // Navigate to the ReportDetailPage for the selected report.
+                    // //         Navigator.push(
+                    // //           context,
+                    // //           MaterialPageRoute(
+                    // //             builder: (context) => ListTile(
+                    // //   title: Text(report.),
+                    // //   subtitle: Text(report['carModel']),
+                    // // ),
+                    // //           ),
+                    //         );
+                  },
+                );
+              },
             );
-          }).toList(),
-        );
-      },
-    ));
+          },
+        ));
+  }
+  
+}
+
+class Report {
+  late String reportId;
+  late String address;
+  late String status;
+
+  Report({required this.reportId, required this.address, required this.status});
+
+  Report.fromSnapshot(DocumentSnapshot snapshot) {
+    reportId = snapshot['reportId'];
+    address = snapshot['address'];
+    status = snapshot['status'];
   }
 }
