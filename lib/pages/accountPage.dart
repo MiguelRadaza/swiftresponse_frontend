@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
+import 'package:swiftresponse/pages/loginPage.dart';
 import 'package:swiftresponse/utils/colors.dart';
 import 'package:swiftresponse/widgets/big_text.dart';
 
@@ -32,6 +33,11 @@ class _AccountPageState extends State<AccountPage> {
       age--;
     }
     return age;
+  }
+
+  @override
+  void initState() {
+    super.initState();
   }
 
   @override
@@ -202,6 +208,10 @@ class _AccountPageState extends State<AccountPage> {
                   onTap: () {
                     setState(() {
                       _logout();
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (Container) => const LoginPage()));
                     });
                   },
                   child: Container(
