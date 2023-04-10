@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
@@ -38,19 +39,42 @@ class _AccountPageState extends State<AccountPage> {
   @override
   void initState() {
     super.initState();
+    _handUserSession();
+  }
+
+  void _handUserSession() async {
+    FirebaseAuth.instance.authStateChanges().listen((User? user) async {
+      if (user == null) {
+        print('User is currently signed out!');
+      } else {
+        var variable = await FirebaseFirestore.instance
+            .collection('users')
+            .where('user_id', isEqualTo: user.uid)
+            .get();
+        var userData = variable.docs.first.data() as Map;
+        setState(() {
+          emailTextController.text = userData['email'];
+          permanentAddressTextController.text = userData['address'];
+          lastNameTextController.text = userData['lastname'];
+          ageTextController.text = userData['age'];
+          numberTextController.text = userData['number'];
+          firstNameTextController.text = userData['firstname'];
+        });
+      }
+    });
   }
 
   @override
   void dispose() {
     super.dispose();
-    emailTextController.dispose();
-    passwordTextController.dispose();
-    permanentAddressTextController.dispose();
-    firstNameTextController.dispose();
-    lastNameTextController.dispose();
-    passwordTextController.dispose();
-    numberTextController.dispose();
-    ageTextController.dispose();
+    // emailTextController.dispose();
+    // passwordTextController.dispose();
+    // permanentAddressTextController.dispose();
+    // firstNameTextController.dispose();
+    // lastNameTextController.dispose();
+    // passwordTextController.dispose();
+    // numberTextController.dispose();
+    // ageTextController.dispose();
   }
 
   void _logout() async {
@@ -199,6 +223,42 @@ class _AccountPageState extends State<AccountPage> {
                   decoration: const InputDecoration(
                     border: OutlineInputBorder(),
                     hintText: 'Email',
+                  ),
+                ),
+                const SizedBox(
+                  height: 16,
+                ),
+                GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _logout();
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (Container) => const LoginPage()));
+                    });
+                  },
+                  child: Container(
+                    height: 50,
+                    width: double.maxFinite,
+                    decoration: BoxDecoration(color: AppColors.backgroundColor),
+                    child: Center(
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: const [
+                          Icon(Icons.update),
+                          Gap(10),
+                          Text(
+                            "Update",
+                            style: TextStyle(
+                                color: AppColors.buttonTextColor,
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold),
+                          )
+                        ],
+                      ),
+                    ),
                   ),
                 ),
                 const SizedBox(
